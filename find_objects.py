@@ -50,7 +50,7 @@ class ObjectFinder:
         self.clusterize()
 
     def show(self):
-        for i in range(0, len(self.objects)):
+        for i in range(0, len(self.hierarchy)):
             for j in range(0, len(self.clusters)):
                 for element in self.clusters[j]:
                     if i == element["num"]:
@@ -130,8 +130,8 @@ class ObjectFinder:
         self.normalize()
         self.clusterization()
         self.show()
-        print(len(self.clusters[0]))
-        print(len(self.clusters[1]))
+        #  print(len(self.clusters[0]))
+        #  print(len(self.clusters[1]))
         #  print(len(self.clusters[2]))
         #  print(len(self.clusters[3]))
         cv2.imwrite(self.save_path + "/" + self.name, self.res)
