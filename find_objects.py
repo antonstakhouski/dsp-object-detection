@@ -45,7 +45,7 @@ class ObjectFinder:
             self.objects[i]['theta'] = (self.objects[i]['theta'] + 1) / max_theta
 
     def clusterization(self):
-        n = 3
+        n = 2
         self.find_centers(n)
         self.clusterize()
 
@@ -93,17 +93,28 @@ class ObjectFinder:
                        (obj1['compactness'] - obj2['compactness']) ** 2 +
                        (obj1['elongation'] - obj2['elongation']) ** 2 +
                        (obj1['theta'] - obj2['theta']) ** 2)
+    #
+    #  def metric(self, vecA, vecB):
+    #      def dotProduct(vecA, vecB):
+    #          d = 0.0
+    #          for dim in vecA:
+    #              if dim in vecB:
+    #                  d += vecA[dim]*vecB[dim]
+    #          return d
+    #      return dotProduct(vecA, vecB) / np.sqrt(dotProduct(vecA, vecA)) / np.sqrt(dotProduct(vecB, vecB))
 
     def find_centers(self, n):
         max_metric = 0
         jj = 0
         ii = 0
-        for i in self.objects:
-            for j in self.objects:
-                if self.metric(i, j) >= max_metric:
-                    max_metric = self.metric(i, j)
-                    ii = i
-                    jj = j
+        for i in range(0, len(self.objects) - 1):
+            for j in range(i + 1, len(self.objects)):
+                if self.metric(self.objects[i], self.objects[j]) > max_metric:
+                    max_metric = self.metric(self.objects[i], self.objects[j])
+                    #  print(max_metric)
+                    print(self.objects[i], self.objects[j])
+                    ii = self.objects[i]
+                    jj = self.objects[j]
         self.clusters = []
         self.centroids = []
         self.centroids.append(ii.copy())
@@ -120,12 +131,13 @@ class ObjectFinder:
                 sum_metric = 0
                 for j in self.centroids:
                     sum_metric += self.metric(i, j)
-                if sum_metric >= max_metric:
+                if sum_metric > max_metric:
                     max_metric = sum_metric
                     ii = i
             self.clusters.append([ii])
             self.centroids.append(ii)
             self.objects.remove(ii)
+            max_metric = 0
 
     def run(self):
         self.find_objects()
