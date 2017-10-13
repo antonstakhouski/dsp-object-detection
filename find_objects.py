@@ -13,11 +13,13 @@ class ObjectFinder:
         if not os.path.exists(self.save_path):
             os.mkdir(self.save_path)
         self.pic = cv2.imread(in_file, 0)
+        self.res = np.zeros(self.pic.shape)
 
     def find_objects(self):
         self.objects = []
-        contours, hierarchy, something = cv2.findContours(self.pic, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-        for el in hierarchy:
+        contours, self.hierarchy, something = cv2.findContours(self.pic, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
+        num = 0
+        for el in self.hierarchy:
             area = cv2.contourArea(el)
             M = cv2.moments(el)
             perimeter = cv2.arcLength(el, True)
@@ -26,7 +28,8 @@ class ObjectFinder:
                 (M['m20'] + M['m02'] - np.sqrt((M['m20'] - M['m02']) ** 2 + 4 * (M['m11'] ** 2)))
             theta = 1 / 2 * np.arctan(2 * M['m11'] / (M['m20'] - M['m02']))
             self.objects.append({"area": area, "perimeter": perimeter, "compactness": c,
-                                "elongation": elongation, "theta": theta})
+                                "elongation": elongation, "theta": theta, "num": num})
+            num += 1
 
     def normalize(self):
         max_area = max(item['area'] for item in self.objects)
@@ -45,6 +48,18 @@ class ObjectFinder:
         n = 2
         self.find_centers(n)
         self.clusterize()
+
+    def show(self):
+        for i in range(0, len(self.objects)):
+            for j in range(0, len(self.clusters)):
+                for element in self.clusters[j]:
+                    if i == element["num"]:
+                        color = ((j + 1) * 255) / len(self.clusters)
+                        self.fill(i, color)
+
+    def fill(self, num, color):
+        for pixel in self.hierarchy[num]:
+            self.res[pixel[0, 1], pixel[0, 0]] = color
 
     def clusterize(self):
         min_cluster = 0
@@ -100,7 +115,8 @@ class ObjectFinder:
         self.find_objects()
         self.normalize()
         self.clusterization()
-        #  cv2.imwrite("lol.png", resa)
+        self.show()
+        cv2.imwrite("lol.png", self.res)
 
 
 if __name__ == "__main__":
