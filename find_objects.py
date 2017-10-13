@@ -59,7 +59,7 @@ class ObjectFinder:
             self.res[pixel[0, 1], pixel[0, 0]][2] = 255 - color
 
     def run(self):
-        self.n = 4
+        self.n = 2
         self.find_objects()
         self.normalize()
 
@@ -75,16 +75,21 @@ class ObjectFinder:
 
         # Now separate the data, Note the flatten()
         self.clusters = []
+        self.true_clusters = []
         for i in range(0, self.n):
             self.clusters.append(elements[label.ravel() == i].tolist())
-        self.true_clusters = []
-        for i in self.clusters:
-            tmpcl = []
-            for j in i:
-                tmpcl.append({"area": j[0], "perimeter": j[1], "compactness": j[2], "elongation": j[3],
-                               "theta": j[4]})
+            for i in self.clusters:
+                tmpcl = []
+                for j in i:
+                    tmpcl.append({"area": j[0], "perimeter": j[1], "compactness": j[2], "elongation": j[3],
+                                  "theta": j[4]})
             self.true_clusters.append(tmpcl)
         print(self.true_clusters)
+
+        #  for i in range(0, len(self.clusters)):
+        #      for j in range(0, len(self.clusters[i])):
+        #
+        #          pass
         #  for el in self.objects:
         #      for i in range(0, len(self.clusters)):
         #          for j in range(0, len(self.clusters[i])):
