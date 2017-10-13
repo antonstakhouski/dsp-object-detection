@@ -13,11 +13,11 @@ class ObjectFinder:
         if not os.path.exists(self.save_path):
             os.mkdir(self.save_path)
         self.pic = cv2.imread(in_file, 0)
-        self.res = np.zeros(self.pic.shape)
+        self.res = np.zeros((self.pic.shape[0], self.pic.shape[1], 3))
 
     def find_objects(self):
         self.objects = []
-        contours, self.hierarchy, something = cv2.findContours(self.pic, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
+        contours, self.hierarchy, something = cv2.findContours(self.pic, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
         num = 0
         for el in self.hierarchy:
             area = cv2.contourArea(el)
@@ -45,7 +45,7 @@ class ObjectFinder:
             self.objects[i]['theta'] = (self.objects[i]['theta'] + 1) / max_theta
 
     def clusterization(self):
-        n = 2
+        n = 3
         self.find_centers(n)
         self.clusterize()
 
@@ -59,7 +59,9 @@ class ObjectFinder:
 
     def fill(self, num, color):
         for pixel in self.hierarchy[num]:
-            self.res[pixel[0, 1], pixel[0, 0]] = color
+            self.res[pixel[0, 1], pixel[0, 0]][0] = color
+            self.res[pixel[0, 1], pixel[0, 0]][1] = 255 - color
+            self.res[pixel[0, 1], pixel[0, 0]][2] = 255 - color
 
     def clusterize(self):
         min_cluster = 0
@@ -110,20 +112,20 @@ class ObjectFinder:
         self.clusters.append([jj.copy()])
         self.objects.remove(ii)
         self.objects.remove(jj)
-        #
-        #  max_metric = 0
-        #  ii = 0
-        #  for z in range(2, n):
-        #      for i in self.objects:
-        #          sum_metric = 0
-        #          for j in self.centroids:
-        #              sum_metric += self.metric(i, j)
-        #          if sum_metric >= max_metric:
-        #              max_metric = sum_metric
-        #              ii = i
-        #      self.clusters.append([ii])
-        #      self.centroids.append(ii)
-        #      self.objects.remove(ii)
+
+        max_metric = 0
+        ii = 0
+        for z in range(2, n):
+            for i in self.objects:
+                sum_metric = 0
+                for j in self.centroids:
+                    sum_metric += self.metric(i, j)
+                if sum_metric >= max_metric:
+                    max_metric = sum_metric
+                    ii = i
+            self.clusters.append([ii])
+            self.centroids.append(ii)
+            self.objects.remove(ii)
 
     def run(self):
         self.find_objects()
@@ -133,6 +135,8 @@ class ObjectFinder:
         #  print(len(self.clusters[0]))
         #  print(len(self.clusters[1]))
         #  print(len(self.clusters[2]))
+        #  print(len(self.clusters[3]))
+        #  print(len(self.clusters[4]))
         #  print(len(self.clusters[3]))
         cv2.imwrite(self.save_path + "/" + self.name, self.res)
 
