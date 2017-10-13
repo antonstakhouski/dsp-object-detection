@@ -8,7 +8,7 @@ import os
 
 class Binarizator:
     def __init__(self, in_image, spath):
-        self.name = os.path.basename(in_image).replace(".jpg", "")
+        self.name = os.path.basename(in_image).replace(".jpg", "").replace(".png", "")
         self.save_path = spath
         if not os.path.exists(self.save_path):
             os.mkdir(self.save_path)
@@ -16,7 +16,7 @@ class Binarizator:
         self.pic = cv2.imread("tmp.png")
 
     def morfology(self):
-        self.res = cv2.morphologyEx(self.pic, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (4, 4)))
+        self.res = cv2.morphologyEx(self.pic, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (6, 6)))
 
     def show(self):
         self.morfology()

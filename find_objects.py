@@ -8,6 +8,7 @@ import cv2
 
 class ObjectFinder:
     def __init__(self, in_file, spath):
+        self.colors = [[237, 74, 232], [49, 53, 176], [27, 191, 194], [156, 39, 3], [202, 237, 76], [138, 68, 156]]
         self.name = os.path.basename(in_file)
         self.save_path = spath
         if not os.path.exists(self.save_path):
@@ -49,17 +50,17 @@ class ObjectFinder:
             for j in range(0, len(self.clusters)):
                 for element in self.clusters[j]:
                     if i == element["num"]:
-                        color = ((j + 1) * 255) / len(self.clusters)
-                        self.fill(i, color)
+                        self.fill(i, j)
+                        break
 
     def fill(self, num, color):
         for pixel in self.hierarchy[num]:
-            self.res[pixel[0, 1], pixel[0, 0]][0] = color
-            self.res[pixel[0, 1], pixel[0, 0]][1] = 255 - color
-            self.res[pixel[0, 1], pixel[0, 0]][2] = 255 - color
+            self.res[pixel[0, 1], pixel[0, 0]][0] = self.colors[color][0]
+            self.res[pixel[0, 1], pixel[0, 0]][1] = self.colors[color][1]
+            self.res[pixel[0, 1], pixel[0, 0]][2] = self.colors[color][2]
 
     def run(self):
-        self.n = 6
+        self.n = 2
         self.find_objects()
         self.normalize()
 
@@ -70,8 +71,8 @@ class ObjectFinder:
             elements.append(lst[:][:-1])
         elements = np.float32(elements)
 
-        criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10000, 0.001)
-        ret, label, center = cv2.kmeans(elements, self.n, None, criteria, 10000, cv2.KMEANS_RANDOM_CENTERS)
+        criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 100, 0.01)
+        ret, label, center = cv2.kmeans(elements, self.n, None, criteria, 100, cv2.KMEANS_RANDOM_CENTERS)
 
         # Now separate the data, Note the flatten()
         self.clusters = []
@@ -95,14 +96,8 @@ class ObjectFinder:
                        abs(self.true_clusters[i][j]['theta'] - el['theta']) <= 0.01:
                         self.true_clusters[i][j]['num'] = el['num']
         self.clusters = self.true_clusters
-        #  for el in self.objects:
-        #      for i in range(0, len(self.clusters)):
-        #          for j in range(0, len(self.clusters[i])):
-        #              lst = []
-        #              [lst.append(x[1]) for x in el.items()]
-        #              lst = lst[:][:-1]
-        #              if np.allclose(lst, self.clusters[i][j]):
-        #                  self.res.append(self.clusters[i][j], append(el["num"]))
+        for i in range(0, len(self.clusters)):
+            print(len(self.clusters[i]))
         self.show()
         cv2.imwrite(self.save_path + "/" + self.name, self.res)
 
