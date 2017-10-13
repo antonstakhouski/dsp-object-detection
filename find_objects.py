@@ -40,14 +40,66 @@ class ObjectFinder:
             self.objects[i]['compactness'] = self.objects[i]['compactness'] / max_compactness
             self.objects[i]['elongation'] = self.objects[i]['elongation'] / max_elongation
             self.objects[i]['theta'] = (self.objects[i]['theta'] + 1) / max_theta
-        print(self.objects)
 
-    def clusters(self):
-        pass
+    def clusterization(self):
+        n = 2
+        self.find_centers(n)
+        self.clusterize()
+
+    def clusterize(self):
+        min_cluster = 0
+        min_metric = 1
+        for i in self.objects:
+            for j in range(0, len(self.centroids)):
+                if self.metric(i, self.centroids[j]) <= min_metric:
+                    min_metric = self.metric(i, self.centroids[j])
+                    min_cluster = j
+            self.clusters[min_cluster].append(i)
+            self.recalc_centroid(j)
+            min_metric = 1
+
+    def recalc_centroid(self, num):
+        sum_area = sum(item['area'] for item in self.clusters[num])
+        sum_perimeter = sum(item['perimeter'] for item in self.clusters[num])
+        sum_compactness = sum(item['compactness'] for item in self.clusters[num])
+        sum_elongation = sum(item['elongation'] for item in self.clusters[num])
+        sum_theta = sum(item['theta'] for item in self.clusters[num])
+        self.centroids[num]['area'] = sum_area / len(self.clusters[num])
+        self.centroids[num]['perimeter'] = sum_perimeter / len(self.clusters[num])
+        self.centroids[num]['compactness'] = sum_compactness / len(self.clusters[num])
+        self.centroids[num]['elongation'] = sum_elongation / len(self.clusters[num])
+        self.centroids[num]['theta'] = sum_theta / len(self.clusters[num])
+
+    def metric(self, obj1, obj2):
+        return np.sqrt((obj1['area'] - obj2['area']) ** 2 +
+                       (obj1['perimeter'] - obj2['perimeter']) ** 2 +
+                       (obj1['compactness'] - obj2['compactness']) ** 2 +
+                       (obj1['elongation'] - obj2['elongation']) ** 2 +
+                       (obj1['theta'] - obj2['theta']) ** 2)
+
+    def find_centers(self, n):
+        max_metric = 0
+        jj = 0
+        ii = 0
+        for i in self.objects:
+            for j in self.objects:
+                if self.metric(i, j) >= max_metric:
+                    max_metric = self.metric(i, j)
+                    ii = i
+                    jj = j
+        self.clusters = []
+        self.centroids = []
+        self.centroids.append(ii.copy())
+        self.centroids.append(jj.copy())
+        self.clusters.append([ii.copy()])
+        self.clusters.append([jj.copy()])
+        self.objects.remove(ii)
+        self.objects.remove(jj)
 
     def run(self):
         self.find_objects()
         self.normalize()
+        self.clusterization()
         #  cv2.imwrite("lol.png", resa)
 
 
