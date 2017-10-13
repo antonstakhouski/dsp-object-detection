@@ -1,3 +1,3 @@
 #!/bin/bash
 
-./binarize_all.sh src_img/ binarized
+./binarize_all.sh easy/ binarized
