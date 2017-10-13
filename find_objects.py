@@ -116,7 +116,7 @@ class ObjectFinder:
         self.normalize()
         self.clusterization()
         self.show()
-        cv2.imwrite("lol.png", self.res)
+        cv2.imwrite(self.save_path + "/" + self.name, self.res)
 
 
 if __name__ == "__main__":
