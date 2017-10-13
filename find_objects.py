@@ -12,22 +12,42 @@ class ObjectFinder:
         self.save_path = spath
         if not os.path.exists(self.save_path):
             os.mkdir(self.save_path)
-        self.pic = cv2.imread(in_file)
+        self.pic = cv2.imread(in_file, 0)
 
-    def make_labels(self):
-        res = cv2.connectedComponents(self.pic[:, :, 0], ltype=cv2.CV_32S)
-        self.labels = np.zeros(self.pic.shape)
-        self.objects_count = res[0] - 1
-        h, w, _ = self.pic.shape
-        for y in range(0, h):
-            for x in range(0, w):
-                self.labels[y, x] = 255 * res[1][y, x] // (res[0] - 1)
+    def find_objects(self):
+        self.objects = []
+        contours, hierarchy, something = cv2.findContours(self.pic, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+        for el in hierarchy:
+            area = cv2.contourArea(el)
+            M = cv2.moments(el)
+            perimeter = cv2.arcLength(el, True)
+            c = (perimeter ** 2) / area
+            elongation = (M['m20'] + M['m02'] + np.sqrt((M['m20'] - M['m02']) ** 2 + 4 * (M['m11'] ** 2))) /\
+                (M['m20'] + M['m02'] - np.sqrt((M['m20'] - M['m02']) ** 2 + 4 * (M['m11'] ** 2)))
+            theta = 1 / 2 * np.arctan(2 * M['m11'] / (M['m20'] - M['m02']))
+            self.objects.append({"area": area, "perimeter": perimeter, "compactness": c,
+                                "elongation": elongation, "theta": theta})
+
+    def normalize(self):
+        max_area = max(item['area'] for item in self.objects)
+        max_perimeter = max(item['perimeter'] for item in self.objects)
+        max_compactness = max(item['compactness'] for item in self.objects)
+        max_elongation = max(item['elongation'] for item in self.objects)
+        max_theta = max(item['theta'] for item in self.objects) + 1
+        for i in range(0, len(self.objects)):
+            self.objects[i]['area'] = self.objects[i]['area'] / max_area
+            self.objects[i]['perimeter'] = self.objects[i]['perimeter'] / max_perimeter
+            self.objects[i]['compactness'] = self.objects[i]['compactness'] / max_compactness
+            self.objects[i]['elongation'] = self.objects[i]['elongation'] / max_elongation
+            self.objects[i]['theta'] = (self.objects[i]['theta'] + 1) / max_theta
+        print(self.objects)
 
     def clusters(self):
         pass
 
     def run(self):
-        self.make_labels()
+        self.find_objects()
+        self.normalize()
         #  cv2.imwrite("lol.png", resa)
 
 
