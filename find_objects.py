@@ -84,12 +84,19 @@ class ObjectFinder:
                     tmpcl.append({"area": j[0], "perimeter": j[1], "compactness": j[2], "elongation": j[3],
                                   "theta": j[4]})
             self.true_clusters.append(tmpcl)
+
+        for i in range(0, len(self.clusters)):
+            for j in range(0, len(self.clusters[i])):
+                for el in self.objects:
+                    if abs(self.true_clusters[i][j]['area'] - el['area']) <= 0.01 and\
+                       abs(self.true_clusters[i][j]['perimeter'] - el['perimeter']) <= 0.01 and\
+                       abs(self.true_clusters[i][j]['compactness'] - el['compactness']) <= 0.01 and\
+                       abs(self.true_clusters[i][j]['elongation'] - el['elongation']) <= 0.01 and\
+                       abs(self.true_clusters[i][j]['theta'] - el['theta']) <= 0.01:
+                        self.true_clusters[i][j]['num'] = el['num']
+                        #  print(el['num'])
         print(self.true_clusters)
 
-        #  for i in range(0, len(self.clusters)):
-        #      for j in range(0, len(self.clusters[i])):
-        #
-        #          pass
         #  for el in self.objects:
         #      for i in range(0, len(self.clusters)):
         #          for j in range(0, len(self.clusters[i])):
