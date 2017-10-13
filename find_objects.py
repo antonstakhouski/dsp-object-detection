@@ -59,7 +59,7 @@ class ObjectFinder:
             self.res[pixel[0, 1], pixel[0, 0]][2] = 255 - color
 
     def run(self):
-        self.n = 2
+        self.n = 6
         self.find_objects()
         self.normalize()
 
@@ -70,8 +70,8 @@ class ObjectFinder:
             elements.append(lst[:][:-1])
         elements = np.float32(elements)
 
-        criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
-        ret, label, center = cv2.kmeans(elements, self.n, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
+        criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10000, 0.001)
+        ret, label, center = cv2.kmeans(elements, self.n, None, criteria, 10000, cv2.KMEANS_RANDOM_CENTERS)
 
         # Now separate the data, Note the flatten()
         self.clusters = []
@@ -94,9 +94,7 @@ class ObjectFinder:
                        abs(self.true_clusters[i][j]['elongation'] - el['elongation']) <= 0.01 and\
                        abs(self.true_clusters[i][j]['theta'] - el['theta']) <= 0.01:
                         self.true_clusters[i][j]['num'] = el['num']
-                        #  print(el['num'])
-        print(self.true_clusters)
-
+        self.clusters = self.true_clusters
         #  for el in self.objects:
         #      for i in range(0, len(self.clusters)):
         #          for j in range(0, len(self.clusters[i])):
@@ -105,8 +103,8 @@ class ObjectFinder:
         #              lst = lst[:][:-1]
         #              if np.allclose(lst, self.clusters[i][j]):
         #                  self.res.append(self.clusters[i][j], append(el["num"]))
-        #  self.show()
-        #  cv2.imwrite(self.save_path + "/" + self.name, self.res)
+        self.show()
+        cv2.imwrite(self.save_path + "/" + self.name, self.res)
 
 
 if __name__ == "__main__":
