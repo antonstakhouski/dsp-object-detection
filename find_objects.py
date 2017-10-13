@@ -110,12 +110,30 @@ class ObjectFinder:
         self.clusters.append([jj.copy()])
         self.objects.remove(ii)
         self.objects.remove(jj)
+        #
+        #  max_metric = 0
+        #  ii = 0
+        #  for z in range(2, n):
+        #      for i in self.objects:
+        #          sum_metric = 0
+        #          for j in self.centroids:
+        #              sum_metric += self.metric(i, j)
+        #          if sum_metric >= max_metric:
+        #              max_metric = sum_metric
+        #              ii = i
+        #      self.clusters.append([ii])
+        #      self.centroids.append(ii)
+        #      self.objects.remove(ii)
 
     def run(self):
         self.find_objects()
         self.normalize()
         self.clusterization()
         self.show()
+        print(len(self.clusters[0]))
+        print(len(self.clusters[1]))
+        #  print(len(self.clusters[2]))
+        #  print(len(self.clusters[3]))
         cv2.imwrite(self.save_path + "/" + self.name, self.res)
 
 
